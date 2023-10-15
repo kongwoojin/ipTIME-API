@@ -1,4 +1,4 @@
-package main
+package routers
 
 import (
 	"fmt"
@@ -11,7 +11,7 @@ import (
 	"strings"
 )
 
-func routerStatus(client *http.Client, router *structs.Router) *structs.RouterStatus {
+func RouterStatus(client *http.Client, router *structs.Router) *structs.RouterStatus {
 	var baseURL = "http://" + router.Host + ":" + fmt.Sprint(router.Port) + "/sess-bin/"
 
 	req, err := http.NewRequest("GET", baseURL+routerSystemInfoStatus, nil)
@@ -31,6 +31,11 @@ func routerStatus(client *http.Client, router *structs.Router) *structs.RouterSt
 	html, err := goquery.NewDocumentFromReader(resp.Body)
 	if err != nil {
 		log.Fatal(err)
+	}
+
+	if strings.Contains(html.Text(), "/sess-bin/login_session.cgi") || strings.Contains(html.Text(), "top.location = \"/\";") {
+		fmt.Println("Not logged in!")
+		return nil
 	}
 
 	routerStatus := &structs.RouterStatus{}

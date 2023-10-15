@@ -1,4 +1,4 @@
-package main
+package routers
 
 import (
 	"fmt"
@@ -11,7 +11,7 @@ import (
 	"strings"
 )
 
-func login(client *http.Client, router *structs.Router) bool {
+func Login(client *http.Client, router *structs.Router) bool {
 	var baseURL = "http://" + router.Host + ":" + fmt.Sprint(router.Port) + "/sess-bin/"
 
 	params := url.Values{
