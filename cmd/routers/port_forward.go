@@ -1,14 +1,14 @@
 package routers
 
 import (
+	"bufio"
 	"bytes"
 	"fmt"
-	"github.com/PuerkitoBio/goquery"
 	"github.com/kongwoojin/ipTIME-API/cmd/structs"
+	"io"
 	"log"
 	"net/http"
 	"net/url"
-	"regexp"
 	"strconv"
 	"strings"
 )
@@ -16,11 +16,11 @@ import (
 func GetPortForwardList(client *http.Client, router *structs.Router) []structs.PortForward {
 	var baseURL = "http://" + router.Host + ":" + fmt.Sprint(router.Port) + "/sess-bin/"
 
-	req, err := http.NewRequest("GET", baseURL+routerPortForwardList, nil)
+	req, err := http.NewRequest("GET", baseURL+routerPortForwardRulesDownload, nil)
 	if err != nil {
 		log.Fatal(err)
 	}
-	req.Header.Set("Referer", baseURL+routerLogin)
+	req.Header.Set("Referer", baseURL+routerPortForwardRestore)
 	req.Header.Set("User-Agent", "Mozilla/5.0")
 	resp, err := client.Do(req)
 
@@ -30,62 +30,61 @@ func GetPortForwardList(client *http.Client, router *structs.Router) []structs.P
 
 	defer resp.Body.Close()
 
-	html, err := goquery.NewDocumentFromReader(resp.Body)
+	data, err := io.ReadAll(resp.Body)
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	if strings.Contains(html.Text(), "/sess-bin/login_session.cgi") || strings.Contains(html.Text(), "top.location = \"/\";") {
+	if strings.Contains(string(data), "/sess-bin/login_session.cgi") || strings.Contains(string(data), "top.location = \"/\";") {
 		fmt.Println("Not logged in!")
 		return nil
 	}
 
 	var portForwardList []structs.PortForward
 
-	table := html.Find("table")
-	tbody := table.Find("tbody")
+	portForward := &structs.PortForward{}
 
-	tbody.Find("tr.pf_tr").EachWithBreak(func(i int, s *goquery.Selection) bool {
-		id, _ := s.Attr("id")
-		if strings.Compare(id, "_-guard_line") == 0 {
-			return false
+	scanner := bufio.NewScanner(bytes.NewReader(data))
+	for scanner.Scan() {
+		if strings.Contains(scanner.Text(), "[") {
+			portForward.Name = scanner.Text()[1 : len(scanner.Text())-1]
+		} else if strings.Contains(scanner.Text(), "=") {
+			s := strings.Split(scanner.Text(), "=")
+			key, value := strings.Trim(s[0], " "), strings.Trim(s[1], " ")
+			switch key {
+			case "enable":
+				portForward.Enabled = value == "1"
+			case "protocol":
+				portForward.Protocol = value
+			case "extern_port":
+				if strings.Contains(value, "-") {
+					s := strings.Split(value, "-")
+					portForward.ExternalPortStart, _ = strconv.Atoi(s[0])
+					portForward.ExternalPortEnd, _ = strconv.Atoi(s[1])
+				} else {
+					portForward.ExternalPortStart, _ = strconv.Atoi(value)
+					portForward.ExternalPortEnd = portForward.ExternalPortStart
+				}
+			case "local_port":
+				if strings.Contains(value, "-") {
+					s := strings.Split(value, "-")
+					portForward.InternalPortStart, _ = strconv.Atoi(s[0])
+					portForward.InternalPortEnd, _ = strconv.Atoi(s[1])
+				} else {
+					portForward.InternalPortStart, _ = strconv.Atoi(value)
+					portForward.InternalPortEnd = portForward.InternalPortStart
+				}
+			case "local_ip":
+				portForward.IP = value
+				portForwardList = append(portForwardList, *portForward)
+				portForward = &structs.PortForward{}
+			}
 		}
+	}
 
-		var portForward = &structs.PortForward{}
-		portForward.Name = s.Find("td:nth-child(2) > a:nth-child(1)").Text()
-		portForward.IP = s.Find("td:nth-child(3) > span:nth-child(1)").Text()
-
-		portRe := regexp.MustCompile("[0-9]+")
-		protocolRe := regexp.MustCompile("(TCPUDP|TCP|UDP|GRE)")
-
-		externalPort := s.Find("td:nth-child(4) > span:nth-child(1)").Text()
-
-		portForward.Protocol = strings.ToLower(protocolRe.FindString(externalPort))
-
-		externalPorts := portRe.FindAllString(externalPort, -1)
-
-		if len(externalPorts) == 2 {
-			portForward.ExternalPortStart, _ = strconv.Atoi(externalPorts[0])
-			portForward.ExternalPortEnd, _ = strconv.Atoi(externalPorts[1])
-		} else {
-			portForward.ExternalPortStart, _ = strconv.Atoi(externalPorts[0])
-			portForward.ExternalPortEnd = portForward.ExternalPortStart
-		}
-
-		internalPort := s.Find("td:nth-child(5) > span:nth-child(1)").Text()
-		internalPorts := portRe.FindAllString(internalPort, -1)
-
-		if len(internalPorts) == 2 {
-			portForward.InternalPortStart, _ = strconv.Atoi(internalPorts[0])
-			portForward.InternalPortEnd, _ = strconv.Atoi(internalPorts[1])
-		} else {
-			portForward.InternalPortStart, _ = strconv.Atoi(internalPorts[0])
-			portForward.InternalPortEnd = portForward.InternalPortStart
-		}
-
-		portForwardList = append(portForwardList, *portForward)
-		return true
-	})
+	if err := scanner.Err(); err != nil {
+		log.Println(err)
+	}
 
 	return portForwardList
 }
