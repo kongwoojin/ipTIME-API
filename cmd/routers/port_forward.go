@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"github.com/PuerkitoBio/goquery"
 	"github.com/kongwoojin/ipTIME-API/cmd/structs"
-	"io"
 	"log"
 	"net/http"
 	"net/url"
@@ -91,7 +90,7 @@ func GetPortForwardList(client *http.Client, router *structs.Router) []structs.P
 	return portForwardList
 }
 
-func AddPortForward(client *http.Client, router *structs.Router, portForward *structs.PortForward) bool {
+func AddPortForward(client *http.Client, router *structs.Router, portForward *structs.PortForward) {
 	var baseURL = "http://" + router.Host + ":" + fmt.Sprint(router.Port) + "/sess-bin/"
 
 	switch strings.ToLower(portForward.Protocol) {
@@ -101,7 +100,8 @@ func AddPortForward(client *http.Client, router *structs.Router, portForward *st
 	case "gre":
 		break
 	default:
-		return false
+		fmt.Printf("Unknown protocol: %s\n", portForward.Protocol)
+		return
 	}
 
 	params := url.Values{
@@ -133,17 +133,6 @@ func AddPortForward(client *http.Client, router *structs.Router, portForward *st
 	}
 
 	defer resp.Body.Close()
-
-	data, err := io.ReadAll(resp.Body)
-	if err != nil {
-		panic(err)
-	}
-
-	if strings.Contains(string(data), "onClickedPFRule") {
-		return false
-	}
-
-	return true
 }
 
 func RemovePortForward(client *http.Client, router *structs.Router, portForward *structs.PortForward) {
