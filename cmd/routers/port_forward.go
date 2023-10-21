@@ -145,3 +145,33 @@ func AddPortForward(client *http.Client, router *structs.Router, portForward *st
 
 	return true
 }
+
+func RemovePortForward(client *http.Client, router *structs.Router, portForward *structs.PortForward) {
+	var baseURL = "http://" + router.Host + ":" + fmt.Sprint(router.Port) + "/sess-bin/"
+
+	params := url.Values{
+		"tmenu": []string{"iframe"}, "smenu": []string{"user_portforward"}, "act": []string{"del"},
+		"view_mode": []string{"user"}, "mode": []string{"user"},
+		"trigger_protocol": []string{""}, "trigger_sport": []string{""}, "trigger_eport": []string{""},
+		"forward_ports": []string{""}, "forward_protocol": []string{""},
+		"disabled": []string{""}, "priority": []string{""}, "old_priority": []string{""},
+		"int_sport": []string{""}, "int_eport": []string{""}, "ext_sport": []string{""}, "ext_eport": []string{""},
+		"internal_ip": []string{""}, "protocol": []string{""},
+
+		"delcheck": []string{portForward.Name},
+	}
+
+	req, err := http.NewRequest("POST", baseURL+routerRoot, bytes.NewBufferString(params.Encode()))
+	if err != nil {
+		log.Fatal(err)
+	}
+	req.Header.Set("Referer", baseURL+routerPortForwardList)
+	req.Header.Set("User-Agent", "Mozilla/5.0")
+	resp, err := client.Do(req)
+
+	if err != nil {
+		panic(err)
+	}
+
+	defer resp.Body.Close()
+}

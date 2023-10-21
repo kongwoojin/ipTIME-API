@@ -28,13 +28,17 @@ func main() {
 
 		// Check add port forward
 		routers.AddPortForward(client, router, &structs.PortForward{
-			Name:              "test",
+			Name:              "portforward_test",
 			IP:                "192.168.0.253",
 			Protocol:          "TCP",
 			InternalPortStart: 80,
 			InternalPortEnd:   80,
 			ExternalPortStart: 80,
 			ExternalPortEnd:   80,
+		})
+
+		routers.RemovePortForward(client, router, &structs.PortForward{
+			Name: "portforward_test",
 		})
 	} else {
 		log.Fatal("Login failed")
