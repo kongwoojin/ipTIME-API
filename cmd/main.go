@@ -40,6 +40,15 @@ func main() {
 		routers.RemovePortForward(client, router, &structs.PortForward{
 			Name: "portforward_test",
 		})
+
+		// Check add WOL
+		routers.AddWOL(client, router, "00:00:00:00:00:00", "test")
+
+		// Check remove WOL
+		routers.RemoveWOL(client, router, "00:00:00:00:00:00")
+
+		// Check WOL
+		routers.Wake(client, router, "00:00:00:00:00:00")
 	} else {
 		log.Fatal("Login failed")
 	}

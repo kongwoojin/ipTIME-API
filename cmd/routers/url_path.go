@@ -9,3 +9,5 @@ const routerLanPCInfoStatus = "timepro.cgi?tmenu=iframe&smenu=lan_pcinfo_status"
 const routerPortForwardList = "timepro.cgi?tmenu=iframe&smenu=user_portforward&mode=user"
 const routerPortForwardRulesDownload = "download_portforward.cgi"
 const routerPortForwardRestore = "timepro.cgi?tmenu=iframe&smenu=restore_portforward"
+
+const routerWOLList = "timepro.cgi?tmenu=iframe&smenu=expertconfwollist"
