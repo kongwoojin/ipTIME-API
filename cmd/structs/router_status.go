@@ -9,6 +9,7 @@ const (
 )
 
 type RouterStatus struct {
+	Model               string
 	IsInternetConnected bool
 	IpType              IpType
 	Ip                  string

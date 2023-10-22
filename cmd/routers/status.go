@@ -40,6 +40,8 @@ func RouterStatus(client *http.Client, router *structs.Router) *structs.RouterSt
 
 	routerStatus := &structs.RouterStatus{}
 
+	title := html.Find("title").Text()
+	routerStatus.Model = strings.Trim(title, " ")
 	table := html.Find("table.menu_content_list_noline_table")
 	tbody := table.Find("tbody")
 
