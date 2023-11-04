@@ -11,7 +11,10 @@ ipTIME-API is an unofficial API wrapper for ipTIME routers.
   * Add Wake on lan
   * Remove Wake on lan
   * Send wake on lan packet
-
+* Mac address auth
+  * Change Mac address auth policy
+  * Add Mac address
+  * Remove Mac address
 ## Tested Routers
 ### Wifi6 routers
 | Router name    | Router version | 

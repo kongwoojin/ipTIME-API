@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"github.com/kongwoojin/ipTIME-API/cmd/enums"
 	"github.com/kongwoojin/ipTIME-API/cmd/routers"
 	"github.com/kongwoojin/ipTIME-API/cmd/structs"
 	"log"
@@ -61,6 +62,24 @@ func main() {
 
 		// Send WOL
 		routers.Wake(client, router, "00:00:00:00:00:00")
+
+		// Change Mac auth policy
+		_, macAuthModeErr := routers.ChangeMacAuthMode(client, router, enums.WhiteList, enums.F5GHZ)
+		if macAuthModeErr != nil {
+			log.Fatal(macAuthModeErr)
+		}
+
+		// Add Mac auth
+		_, addMacAuthErr := routers.AddMacAuth(client, router, enums.F5GHZ, "AA:BB:CC:DD:EE:FF", "test")
+		if addMacAuthErr != nil {
+			log.Fatal(addMacAuthErr)
+		}
+
+		// Remove Mac auth
+		_, removeMacAuthErr := routers.RemoveMacAuth(client, router, enums.F5GHZ, "AA:BB:CC:DD:EE:FF")
+		if removeMacAuthErr != nil {
+			log.Fatal(removeMacAuthErr)
+		}
 	} else {
 		log.Fatal("Login failed")
 	}

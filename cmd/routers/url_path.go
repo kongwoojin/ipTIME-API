@@ -1,5 +1,6 @@
 package routers
 
+// Desktop UI
 const routerLogin = "login.cgi"
 const routerRoot = "timepro.cgi"
 const routerLoginHandler = "login_handler.cgi"
@@ -11,3 +12,10 @@ const routerPortForwardRulesDownload = "download_portforward.cgi"
 const routerPortForwardRestore = "timepro.cgi?tmenu=iframe&smenu=restore_portforward"
 
 const routerWOLList = "timepro.cgi?tmenu=iframe&smenu=expertconfwollist"
+
+const routerMacManagementModeSubmit = "timepro.cgi?tmenu=iframe&smenu=macauth_bsslist_submit"
+const routerMacManagementModeList = "timepro.cgi?tmenu=iframe&smenu=macauth_bsslist"
+
+// Mobile UI
+const mobileRouterMacAuth = "wirelessconf/macauth/iux.cgi"
+const mobileRouterSubmit = "cgi/iux_set.cgi"
