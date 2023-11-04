@@ -89,7 +89,11 @@ func GetPortForwardList(client *http.Client, router *structs.Router) []structs.P
 	return portForwardList
 }
 
-func AddPortForward(client *http.Client, router *structs.Router, portForward *structs.PortForward) {
+func AddPortForward(client *http.Client, router *structs.Router, portForward *structs.PortForward) (bool, error) {
+	if checkPortForwardExist(client, router, portForward.Name) {
+		return false, fmt.Errorf("portforward rule \"%s\" already exist", portForward.Name)
+	}
+
 	var baseURL = "http://" + router.Host + ":" + fmt.Sprint(router.Port) + "/sess-bin/"
 
 	switch strings.ToLower(portForward.Protocol) {
@@ -99,8 +103,7 @@ func AddPortForward(client *http.Client, router *structs.Router, portForward *st
 	case "gre":
 		break
 	default:
-		fmt.Printf("Unknown protocol: %s\n", portForward.Protocol)
-		return
+		return false, fmt.Errorf("Unknown protocol: %s", portForward.Protocol)
 	}
 
 	params := url.Values{
@@ -121,25 +124,40 @@ func AddPortForward(client *http.Client, router *structs.Router, portForward *st
 
 	req, err := http.NewRequest("POST", baseURL+routerRoot, bytes.NewBufferString(params.Encode()))
 	if err != nil {
-		log.Fatal(err)
+		return false, err
 	}
 	req.Header.Set("Referer", baseURL+routerLoginSession)
 	req.Header.Set("User-Agent", "Mozilla/5.0")
 	resp, err := client.Do(req)
 
 	if err != nil {
-		panic(err)
+		return false, err
 	}
 
 	defer resp.Body.Close()
+
+	data, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return false, err
+	}
+
+	if strings.Contains(string(data), portForward.Name) {
+		return true, nil
+	} else {
+		return false, fmt.Errorf("failed to add portforward rule \"%s\"", portForward.Name)
+	}
 }
 
-func RemovePortForward(client *http.Client, router *structs.Router, portForward *structs.PortForward) {
+func RemovePortForward(client *http.Client, router *structs.Router, portForward *structs.PortForward) (bool, error) {
+	if !checkPortForwardExist(client, router, portForward.Name) {
+		return false, fmt.Errorf("portforward rule \"%s\" cannot be found", portForward.Name)
+	}
+
 	var baseURL = "http://" + router.Host + ":" + fmt.Sprint(router.Port) + "/sess-bin/"
 
 	params := url.Values{
 		"tmenu": []string{"iframe"}, "smenu": []string{"user_portforward"}, "act": []string{"del"},
-		"view_mode": []string{"user"}, "mode": []string{"user"},
+		"view_mode": []string{"user"}, "mode": []string{""},
 		"trigger_protocol": []string{""}, "trigger_sport": []string{""}, "trigger_eport": []string{""},
 		"forward_ports": []string{""}, "forward_protocol": []string{""},
 		"disabled": []string{""}, "priority": []string{""}, "old_priority": []string{""},
@@ -151,15 +169,35 @@ func RemovePortForward(client *http.Client, router *structs.Router, portForward 
 
 	req, err := http.NewRequest("POST", baseURL+routerRoot, bytes.NewBufferString(params.Encode()))
 	if err != nil {
-		log.Fatal(err)
+		return false, err
 	}
 	req.Header.Set("Referer", baseURL+routerPortForwardList)
 	req.Header.Set("User-Agent", "Mozilla/5.0")
 	resp, err := client.Do(req)
 
 	if err != nil {
-		panic(err)
+		return false, err
 	}
 
 	defer resp.Body.Close()
+
+	data, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return false, err
+	}
+
+	if strings.Contains(string(data), portForward.Name) {
+		return false, fmt.Errorf("failed to remove portforward rule \"%s\"", portForward.Name)
+	} else {
+		return true, nil
+	}
+}
+
+func checkPortForwardExist(client *http.Client, router *structs.Router, portForwardName string) bool {
+	for _, portForwardItem := range GetPortForwardList(client, router) {
+		if strings.Compare(portForwardItem.Name, portForwardName) == 0 {
+			return true
+		}
+	}
+	return false
 }

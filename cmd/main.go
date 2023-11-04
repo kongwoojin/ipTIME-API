@@ -27,7 +27,7 @@ func main() {
 		}
 
 		// Check add port forward
-		routers.AddPortForward(client, router, &structs.PortForward{
+		_, addErr := routers.AddPortForward(client, router, &structs.PortForward{
 			Name:              "portforward_test",
 			IP:                "192.168.0.253",
 			Protocol:          "TCP",
@@ -36,18 +36,30 @@ func main() {
 			ExternalPortStart: 80,
 			ExternalPortEnd:   80,
 		})
+		if addErr != nil {
+			log.Fatal(addErr)
+		}
 
-		routers.RemovePortForward(client, router, &structs.PortForward{
+		_, removeErr := routers.RemovePortForward(client, router, &structs.PortForward{
 			Name: "portforward_test",
 		})
+		if removeErr != nil {
+			log.Fatal(removeErr)
+		}
 
 		// Check add WOL
-		routers.AddWOL(client, router, "00:00:00:00:00:00", "test")
+		_, addWolErr := routers.AddWOL(client, router, "00:00:00:00:00:00", "test")
+		if addWolErr != nil {
+			log.Fatal(addWolErr)
+		}
 
 		// Check remove WOL
-		routers.RemoveWOL(client, router, "00:00:00:00:00:00")
+		_, removeWolErr := routers.RemoveWOL(client, router, "00:00:00:00:00:00")
+		if removeWolErr != nil {
+			log.Fatal(removeWolErr)
+		}
 
-		// Check WOL
+		// Send WOL
 		routers.Wake(client, router, "00:00:00:00:00:00")
 	} else {
 		log.Fatal("Login failed")
