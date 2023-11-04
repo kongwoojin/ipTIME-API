@@ -15,7 +15,11 @@ func main() {
 
 	if routers.Login(client, router) {
 		// Check Router status
-		fmt.Printf("%+v\n", *routers.RouterStatus(client, router))
+		status, err := routers.RouterStatus(client, router)
+		if err != nil {
+			log.Fatal(err)
+		}
+		fmt.Printf("%+v\n", *status)
 
 		// Check connected clients
 		for i, v := range routers.GetConnectedClientList(client, router) {

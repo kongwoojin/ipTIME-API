@@ -17,5 +17,8 @@ const routerMacManagementModeSubmit = "timepro.cgi?tmenu=iframe&smenu=macauth_bs
 const routerMacManagementModeList = "timepro.cgi?tmenu=iframe&smenu=macauth_bsslist"
 
 // Mobile UI
+const mobileRouterRoot = "sysconf/info/iux.cgi"
+const mobileRouterStatus = "cgi/iux_get.cgi?tmenu=sysconf&smenu=info&act=status"
+const mobileRouterSystemInfo = "cgi/iux_get.cgi?tmenu=firmware&smenu=sysinfo"
 const mobileRouterMacAuth = "wirelessconf/macauth/iux.cgi"
 const mobileRouterSubmit = "cgi/iux_set.cgi"

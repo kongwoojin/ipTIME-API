@@ -10,10 +10,21 @@ const (
 )
 
 func (f WifiFrequency) GetSSID(status *structs.RouterStatus) string {
+	ssid := ""
+	for _, wifi := range status.NetworkStatus.Wireless {
+		if wifi.Mhz == f.GetFullFrequency() {
+			ssid = wifi.Ssid
+			break
+		}
+	}
+	return ssid
+}
+
+func (f WifiFrequency) GetFullFrequency() string {
 	if f == F2_4GHZ {
-		return status.Twoghz.Ssid
+		return "2.4 GHz"
 	} else {
-		return status.Fiveghz.Ssid
+		return "5 GHz"
 	}
 }
 
