@@ -6,7 +6,6 @@ import (
 	"github.com/kongwoojin/ipTIME-API/cmd/enums"
 	"github.com/kongwoojin/ipTIME-API/cmd/structs"
 	"io"
-	"log"
 	"net/http"
 	"net/url"
 	"strings"
@@ -23,7 +22,7 @@ func ChangeMacAuthMode(client *http.Client, router *structs.Router, policy enums
 
 	req, err := http.NewRequest("POST", baseURL+mobileRouterSubmit, bytes.NewBufferString(params.Encode()))
 	if err != nil {
-		log.Fatal(err)
+		return false, err
 	}
 	req.Header.Set("Origin", baseURL)
 	req.Header.Set("Referer", baseURL+mobileRouterMacAuth)
@@ -60,7 +59,7 @@ func AddMacAuth(client *http.Client, router *structs.Router, frequency enums.Wif
 
 	req, err := http.NewRequest("POST", baseURL+mobileRouterSubmit, bytes.NewBufferString(params.Encode()))
 	if err != nil {
-		log.Fatal(err)
+		return false, err
 	}
 	req.Header.Set("Origin", baseURL)
 	req.Header.Set("Referer", baseURL+mobileRouterMacAuth)
