@@ -90,6 +90,10 @@ func GetPortForwardList(client *http.Client, router *structs.Router) []structs.P
 }
 
 func AddPortForward(client *http.Client, router *structs.Router, portForward *structs.PortForward) (bool, error) {
+	if portForward.IP == router.Host {
+		return false, fmt.Errorf("cannot add router IP to port forward rule")
+	}
+
 	if checkPortForwardExist(client, router, portForward.Name) {
 		return false, fmt.Errorf("portforward rule \"%s\" already exist", portForward.Name)
 	}
