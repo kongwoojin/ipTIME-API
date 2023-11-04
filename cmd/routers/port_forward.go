@@ -95,7 +95,7 @@ func AddPortForward(client *http.Client, router *structs.Router, portForward *st
 	}
 
 	if checkPortForwardExist(client, router, portForward.Name) {
-		return false, fmt.Errorf("portforward rule \"%s\" already exist", portForward.Name)
+		return false, fmt.Errorf("port forward rule \"%s\" already exist", portForward.Name)
 	}
 
 	var baseURL = "http://" + router.Host + ":" + fmt.Sprint(router.Port) + "/sess-bin/"
@@ -148,13 +148,13 @@ func AddPortForward(client *http.Client, router *structs.Router, portForward *st
 	if strings.Contains(string(data), portForward.Name) {
 		return true, nil
 	} else {
-		return false, fmt.Errorf("failed to add portforward rule \"%s\"", portForward.Name)
+		return false, fmt.Errorf("failed to add port forward rule \"%s\"", portForward.Name)
 	}
 }
 
 func RemovePortForward(client *http.Client, router *structs.Router, portForward *structs.PortForward) (bool, error) {
 	if !checkPortForwardExist(client, router, portForward.Name) {
-		return false, fmt.Errorf("portforward rule \"%s\" cannot be found", portForward.Name)
+		return false, fmt.Errorf("port forward rule \"%s\" cannot be found", portForward.Name)
 	}
 
 	var baseURL = "http://" + router.Host + ":" + fmt.Sprint(router.Port) + "/sess-bin/"
@@ -191,7 +191,7 @@ func RemovePortForward(client *http.Client, router *structs.Router, portForward 
 	}
 
 	if strings.Contains(string(data), portForward.Name) {
-		return false, fmt.Errorf("failed to remove portforward rule \"%s\"", portForward.Name)
+		return false, fmt.Errorf("failed to remove port forward rule \"%s\"", portForward.Name)
 	} else {
 		return true, nil
 	}
